@@ -85,17 +85,6 @@ var Shipworks = function(prefix, file, callback){fs.readFile(file, function(err,
 });};
 
 
-//Used to standardize the timestamp length to make it better sortable by filesystems. 
-var pad = (function(input, digits) {
-  //Is the number shorter than the requested digits (including points)?
-  if (input.toString().length < digits) {
-    //If it is shorter, pop a zero on and check if that's good enough.
-    return '0' + pad(input, digits - 1);
-  //When we're done popping zeros on and crawling up the stack, throw the final string back down.
-  } else { return input; }
-});
-
-
 var ErrorHandler = (function(error, badData){
   switch (error){
     //The FileHandler couldn't understand what it had.
