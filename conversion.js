@@ -5,67 +5,64 @@ var xpath = require('xpath');
 
 var CONVERT = (function () {
 
-  var tab = (function(num){
-    return strman('\t').repeat(num).s;
-  });
-
   var conv = {
 
   //maps Shipworks orders csv to Acumen orders tsv.
   SWtoACU : function(input, i) {
     //check if there's something other than a lonely carriage return in the line.
     if (input[1] === undefined) {console.log('Blank input to Conversion.js'); return;}
+    output = [];
     //Add the item quantity. Field A
-    var output = input[2];
+    output[0]  = input[2];
     //Add the sanitized product code. Field  D
-    output += tab(3) + validCode(input[4]);
+    output[3]  = validCode(input[4]);
     //Add the sanitized title. Field E
-    output += tab(1) + tsvSafe(input[3]);
+    output[4]  = tsvSafe(input[3]);
     //Take the total price and divide it into a unit price. Field H
-    output += tab(3) + (input[6]/input[2]);
+    output[7]  = (input[6]/input[2]);
     //Add and manipulate the order number to match the store. Field J
-    output += tab(2) + this.orderNoPre(input[28]) + tsvSafe(input[0]);
+    output[9]  = this.orderNoPre(input[28]) + tsvSafe(input[0]);
     //Add the order date. Field K
-    output += tab(1) + input[1];
+    output[10] = input[1];
     //Add the shipping cost. Field P
-    output += tab(5) + '0';
+    output[15] = '0';
     //Add the billing name. Field X
-    output += tab(8) + input[18];
+    output[23] = input[18];
     //Add the billing address 1. Field Z
-    output += tab(2) + input[19];
+    output[25] = input[19];
     //Add the billing address 2. Field AA
-    output += tab(1) + input[20] + ' ' + input[21];
+    output[26] = input[20] + ' ' + input[21];
     //Add the billing address city. Field AB
-    output += tab(1) + input[22];
+    output[27] = input[22];
     //Add the billing address state. Field AC
-    output += tab(1) + input[23];
+    output[28] = input[23];
     //Add the billing address postal code. Field AD
-    output += tab(1) + input[24];
+    output[29] = input[24];
     //Add the billing address country code. Field AE
-    output += tab(1) + input[25];
+    output[30] = input[25];
     //Add the billing phone. Field AF
-    output += tab(1) + input[26];
+    output[31] = input[26];
     //Add the billing email. Field AG
-    output += tab(1) + input[27];
+    output[32] = input[27];
     //Add the shipping name. Field AT
-    output += tab(13) + input[8];
+    output[45] = input[8];
     //Add the shipping address 1. Field AV
-    output += tab(2) + input[9];
+    output[47] = input[9];
     //Add the shipping address 2. Field AW
-    output += tab(1) + input[10] + ' ' + input[11];
+    output[48] = input[10] + ' ' + input[11];
     //Add the shipping address city. Field AX
-    output += tab(1) + input[12];
+    output[49] = input[12];
     //Add the shipping address state. Field AY
-    output += tab(1) + input[13];
+    output[50] = input[13];
     //Add the shipping address postal code. Field AZ
-    output += tab(1) + input[14];
+    output[51] = input[14];
     //Add the shipping address country code. Field BA
-    output += tab(1) + input[15];
+    output[52] = input[15];
     //Add the shipping phone. Field BB
-    output += tab(1) + input[16];
+    output[53] = input[16];
     //Add the shipping email. Field BC
-    output += tab(1) + input[17];
-    return output;
+    output[54] = input[17];
+    return output.join('\t');
     },
     /*
      * Suggests a prefix for, in order, CedarFort.com, Amazon.com, LDSLoot.com, and BooksAndThings.com
