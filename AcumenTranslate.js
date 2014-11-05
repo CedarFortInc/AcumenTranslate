@@ -4,8 +4,14 @@ var fs = require('fs');
 var strman = require('string');
 var conv = require('./conversion.js');
 var watch = require('watch');
-//Crude promise interface.
-var WriteCount = 0;
+//Promise-like interface to announce when all ordinary ftp connections are closed.
+var WriteCount = {  
+  count : 0,
+  start : (function(){ this.count++;}),
+  done : (function(msg){ if (--this.count === 0) this.allDone(msg);}),
+  allDone : (function(msg) {if (msg) {console.log(msg);} else {console.log('All done. Awaiting further data. . .');}})
+};
+
 
 //This is the listener that checks the ftp directory and triggers the appropriate conversion.
 watch.createMonitor('/srv/ftp/upload/', { 'ignoreDotFiles' : true }, function (monitor){
@@ -64,12 +70,12 @@ var Shipworks = function(prefix, file, callback){fs.readFile(file, function(err,
       var fileName = 'to_AC_#' + stamp + '.txt';
       console.log('Writing Order #' + orderNo + ' to File: ' + fileName);
       //Warn that we are starting a new write.
-      WriteCount++;
+      WriteCount.start();
       //Write the file to the ftp server, ready for download. Server is ProFTPD hosted on this machine.
       fs.writeFile('/srv/ftp/download/' + fileName, singleOrder, function(err) {
         if (err) {console.log(err);} else {console.log('File Ready for Download');}
         //Announce that the write is finished.
-        WriteCount--;
+        WriteCount.done();
       });
       //Finally, clear the previous orders and write the deviant line to the beginning of a new order collection.
       if (value[28] !== undefined) {singleOrder = conv.SWtoACU(value) + '\r\n';
@@ -77,11 +83,6 @@ var Shipworks = function(prefix, file, callback){fs.readFile(file, function(err,
       orderNo = value[0];}
     }
   });
-  //Wait for all writes to resolve, then announce completion.
-  var finished = function() {
-    if (WriteCount > 0) {setTimeout(finished, 100);} else {console.log('All done. Awaiting further data. . .');}
-  };
-  finished();
 });};
 
 
@@ -98,9 +99,10 @@ var ErrorHandler = (function(error, badData){
         //Tell the user where to find the unknown file.
         console.log('\x1b[31mSaving to \x1b[00m./failedfiles/' + filename);
         //Move the file into our junkyard folder.
+        WriteCount.start();
         copyFile(badData, (__dirname + '/failedfiles/' + filename));
-        //Insult the user and continue with what we were doing.
-        console.log('I hope you\'re proud of yourself.\nExcuse me, I have some listening to do. . .');
+        //Insult the user if this is the last write and move on.
+        WriteCount.done('I hope you\'re proud of yourself.\nExcuse me, I have some listening to do. . .');
       //We saw something. Something horrible, outside of man's reckoning. Something in the filesystem that wasn't a file or directory...
       } else {
         //Panic.
